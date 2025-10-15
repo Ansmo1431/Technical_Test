@@ -1,0 +1,57 @@
+# ===============================================================================
+# DEPENDENCIAS PARA AUTOMATIZACIÓN QA - PRUEBA TÉCNICA
+# ===============================================================================
+
+# Selenium para automatización web
+selenium==4.15.2
+
+# Requests para pruebas API con optimizaciones
+requests==2.31.0
+urllib3==2.0.7
+
+# Validación de esquemas JSON
+jsonschema==4.19.2
+
+# Utilidades adicionales para testing
+pytest==7.4.3
+pytest-html==4.1.1
+
+# Manejo de configuración y variables de entorno
+python-decouple==3.8
+
+# Logging y reportes avanzados
+colorlog==6.8.0
+
+# Generación de datos de prueba (si se requiere)
+faker==19.12.1
+
+# Para manejo de timeouts y retry logic optimizado
+tenacity==8.2.3
+
+# ===============================================================================
+# DEPENDENCIAS OPCIONALES PARA DESARROLLO
+# ===============================================================================
+
+# Linting y formato de código
+# flake8==6.1.0
+# black==23.9.1
+# isort==5.12.0
+
+# Testing frameworks adicionales
+# unittest-xml-reporting==3.2.0
+# allure-pytest==2.13.2
+
+# ===============================================================================
+# NOTAS DE INSTALACIÓN
+# ===============================================================================
+
+# Para instalar:
+# pip install -r requirements.txt
+
+# Para desarrollo (opcional):
+# pip install -r requirements.txt flake8 black isort
+
+# Asegurar que Chrome/ChromeDriver estén instalados:
+# - Chrome: https://www.google.com/chrome/
+# - ChromeDriver: https://chromedriver.chromium.org/
+# - O usar webdriver-manager: pip install webdriver-manager
