@@ -5,6 +5,9 @@
 # Selenium para automatización web
 selenium==4.15.2
 
+# WebDriver manager para manejo automático de drivers (opcional)
+webdriver-manager==4.0.1
+
 # Requests para pruebas API con optimizaciones
 requests==2.31.0
 urllib3==2.0.7

@@ -159,7 +159,6 @@ class TestRunner:
         # Mensaje final basado en resultados
         if success_rate == 100:
             print("EXCELENTE: ¡TODAS LAS PRUEBAS PASARON EXITOSAMENTE!")
-            print("NOTA: El proyecto está listo para revisión")
         elif success_rate >= 50:
             print("ADVERTENCIA: Algunas pruebas fallaron, revisar logs anteriores")
             print("ACCIÓN REQUERIDA: Se requiere corrección antes de despliegue")

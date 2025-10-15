@@ -74,6 +74,7 @@ class WebDriverManager:
         """
         Crea y configura el WebDriver optimizado.
         Aplica configuraciones de rendimiento y timeouts.
+        Detecta automáticamente si está ejecutándose en Docker.
         """
         chrome_options = Options()
         
@@ -81,6 +82,7 @@ class WebDriverManager:
         if BROWSER_CONFIG["headless"]:
             chrome_options.add_argument("--headless")
         
+        # Configuraciones básicas
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_argument("--disable-gpu")
@@ -90,6 +92,8 @@ class WebDriverManager:
         chrome_options.add_argument("--disable-extensions")
         chrome_options.add_argument("--disable-plugins")
         chrome_options.add_argument("--disable-images")
+        
+        # Configuración de descargas
         downloads_dir = os.path.abspath("downloads")
         os.makedirs(downloads_dir, exist_ok=True)
         prefs = {
@@ -102,9 +106,35 @@ class WebDriverManager:
             "safebrowsing.enabled": True
         }
         chrome_options.add_experimental_option("prefs", prefs)
-        # Carga más rápida
         
-        driver = webdriver.Chrome(options=chrome_options)
+        # Configuraciones específicas para Docker
+        if os.getenv('QA_ENV') == 'docker' or os.getenv('HEADLESS_MODE') == 'true':
+            chrome_options.add_argument("--disable-features=VizDisplayCompositor")
+            chrome_options.add_argument("--remote-debugging-port=9222")
+            chrome_options.add_argument("--disable-default-apps")
+            chrome_options.add_argument("--disable-background-timer-throttling")
+            chrome_options.add_argument("--disable-backgrounding-occluded-windows")
+            chrome_options.add_argument("--disable-renderer-backgrounding")
+        
+        # Intentar crear el driver con manejo de errores mejorado
+        try:
+            driver = webdriver.Chrome(options=chrome_options)
+        except Exception as e:
+            print(f"ERROR: Fallo al crear WebDriver: {str(e)}")
+            print("INTENTANDO: Usar webdriver-manager como alternativa...")
+            try:
+                from webdriver_manager.chrome import ChromeDriverManager
+                from selenium.webdriver.chrome.service import Service
+                
+                service = Service(ChromeDriverManager().install())
+                driver = webdriver.Chrome(service=service, options=chrome_options)
+                print("EXITOSO: WebDriver creado con webdriver-manager")
+            except ImportError:
+                print("ADVERTENCIA: webdriver-manager no disponible")
+                raise e
+            except Exception as e2:
+                print(f"ERROR: Falló webdriver-manager: {str(e2)}")
+                raise e
         
         # Configurar timeouts optimizados
         driver.implicitly_wait(SELENIUM_TIMEOUTS["implicit_wait"])
@@ -572,15 +602,7 @@ def _test_file_download(driver):
     downloads_dir = os.path.abspath("downloads")
     os.makedirs(downloads_dir, exist_ok=True)
 
-    # Configurar preferencias de descarga para Chrome
-#    chrome_options = Options()
-#    prefs = {
-#        "download.default_directory": downloads_dir,
-#        "download.prompt_for_download": False,
-#        "download.directory_upgrade": True,
-#        "safebrowsing.enabled": True
-#    }
-#    chrome_options.add_experimental_option("prefs", prefs)
+    # Navegar a la sección de descarga de archivos
     navigate_to_section(driver, "File Download")
 
     # Archivo de prueba disponible en el sitio

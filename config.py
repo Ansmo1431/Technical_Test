@@ -35,10 +35,26 @@ SELENIUM_TIMEOUTS = {
 
 # Configuración del navegador
 BROWSER_CONFIG = {
-    "headless": False,          # Cambiar a True para CI/CD
+    "headless": False,          # Cambiar a True para CI/CD o Docker
     "window_size": (1920, 1080),
     "implicit_wait": SELENIUM_TIMEOUTS["implicit_wait"]
 }
+
+# Configuración específica para Docker (se detecta automáticamente)
+import os
+if os.getenv('QA_ENV') == 'docker' or os.getenv('HEADLESS_MODE') == 'true':
+    BROWSER_CONFIG.update({
+        "headless": True,       # Forzar modo headless en Docker
+        "window_size": (1920, 1080),
+        "docker_mode": True
+    })
+    # Extender timeouts para Docker (puede ser más lento)
+    SELENIUM_TIMEOUTS.update({
+        "implicit_wait": 15,
+        "explicit_wait": 20,
+        "page_load": 45,
+        "script": 45
+    })
 
 # =============================================================================
 # CONFIGURACIÓN API AUTOMATION

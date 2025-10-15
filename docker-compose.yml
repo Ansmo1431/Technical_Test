@@ -1,0 +1,100 @@
+# ===============================================================================
+# DOCKER COMPOSE - AUTOMATIZACIÓN QA
+# ===============================================================================
+# Orquestación de servicios para ejecutar pruebas de automatización
+# Incluye servicio principal, red aislada y volúmenes persistentes
+
+version: '3.8'
+
+services:
+  # ===============================================================================
+  # SERVICIO PRINCIPAL - AUTOMATIZACIÓN QA
+  # ===============================================================================
+  qa-automation:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: qa-automation:latest
+    container_name: qa-automation-tests
+    
+    # Variables de entorno
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DISPLAY=:99
+      - QA_ENV=docker
+      - HEADLESS_MODE=true
+      
+    # Volúmenes para persistir datos
+    volumes:
+      - ./downloads:/app/downloads:rw # Archivos descargados en pruebas
+      - /dev/shm:/dev/shm           # Memoria compartida para Chrome
+      
+    # Configuración de red
+    networks:
+      - qa-network
+      
+    # Políticas de reinicio
+    restart: "no"
+    
+    # Límites de recursos
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '1.0'  
+          memory: 1G
+          
+    # Configuración adicional para Chrome
+    shm_size: 2gb
+    
+    # Comando por defecto
+    command: ["python", "test_runner.py"]
+
+  # ===============================================================================
+  # SERVICIO SELENIUM GRID (OPCIONAL)
+  # ===============================================================================
+  # Descomenta esta sección si quieres usar Selenium Grid
+  
+  # selenium-hub:
+  #   image: selenium/hub:4.15.0-20231108
+  #   container_name: selenium-hub
+  #   ports:
+  #     - "4444:4444"
+  #   environment:
+  #     - GRID_MAX_SESSION=16
+  #     - GRID_BROWSER_TIMEOUT=300
+  #     - GRID_TIMEOUT=300
+  #   networks:
+  #     - qa-network
+
+  # selenium-chrome:
+  #   image: selenium/node-chrome:4.15.0-20231108
+  #   shm_size: 2gb
+  #   depends_on:
+  #     - selenium-hub
+  #   environment:
+  #     - HUB_HOST=selenium-hub
+  #     - HUB_PORT=4444
+  #     - NODE_MAX_INSTANCES=5
+  #     - NODE_MAX_SESSION=5
+  #   networks:
+  #     - qa-network
+
+
+# ===============================================================================
+# CONFIGURACIÓN DE RED
+# ===============================================================================
+networks:
+  qa-network:
+    driver: bridge
+    name: qa-automation-network
+
+# ===============================================================================
+# CONFIGURACIÓN DE VOLÚMENES
+# ===============================================================================
+volumes:
+  qa-downloads:
+    driver: local
+    name: qa-automation-downloads

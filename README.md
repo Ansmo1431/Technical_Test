@@ -7,7 +7,7 @@ Este proyecto implementa una solución completa de automatización de pruebas si
 ## Descripción del Proyecto
 
 ### Objetivo
-Demostrar competencias en automatización de pruebas web y API con herramientas modernas, implementando mejores prácticas de QA y optimización de rendimiento.
+Demostrar competencias en automatización de pruebas web y API con herramientas modernas, implementando mejores prácticas de QA, validación funcional y pruebas de performance orientadas a la optimización de tiempos de respuesta, estabilidad bajo carga, y análisis de métricas clave como percentiles, throughput y tasa de error.
 
 ### Alcance de Pruebas
 
@@ -28,6 +28,13 @@ Demostrar competencias en automatización de pruebas web y API con herramientas 
 - **Casos Negativos**: Validación de errores y edge cases
 - **Rate Limiting**: Manejo de límites y robustez
 
+#### Pruebas de Performance (API)
+- **JSONPlaceholder API**: 100 solicitudes concurrentes a /posts durante 2 minutos
+- **ReqRes API**: 50 usuarios simultáneos en /api/users
+- **Swagger Petstore API**: 200 solicitudes por minuto en endpoints de /pet
+- **Casos Negativos**: Validación de errores 4xx/5xx bajo carga
+- **Puntos de Quiebre**: Identificación de límites de rendimiento y estabilidad
+
 ## Arquitectura del Proyecto
 
 ### Estructura KISS Simple y Plana
@@ -39,6 +46,33 @@ automation_test/
 ├── test_runner.py          # Ejecutor principal
 ├── requirements.txt        # Dependencias
 └── README.md              # Documentación
+```
+### Estructura Archivos JMeter
+```
+├── jsonplaceholder/         # Carpeta con las pruebas del servicio JSONPlaceholder
+│ ├── jsonplaceholder.jmx    # Archivo principal de configuración JMeter para este servicio
+│ ├── resultadoF.jtl         # Resultado final con 100 usuarios concurrentes durante 2 minutos
+│ ├── resultado800.jtl       # Resultado de prueba con 800 usuarios concurrentes
+│ ├── resultado1400.jtl      # Resultado de prueba con 1400 usuarios concurrentes
+│ ├── resultado1500.jtl      # Resultado con 1500 usuarios (acercándose al punto de quiebre)
+│ └── ...                    # Otros resultados con distintas cargas de usuarios
+│
+├── reqres/                  # Carpeta con las pruebas del servicio ReqRes
+│ ├── reqres.jmx             # Plan de prueba principal para ReqRes API
+│ ├── resultadoF.jtl         # Resultado final de la ejecución con carga máxima (100 usuarios)
+│ ├── resultado50.jtl        # Resultado parcial con carga reducida
+│ ├── resultado80.jtl        # Resultado parcial con más carga
+│ └── ...                    # Archivos adicionales con pruebas incrementales
+│
+├── swagger/                 # Carpeta con las pruebas del servicio Swagger Petstore
+│ ├── swagger.jmx            # Archivo principal de configuración para la API Swagger
+│ ├── resultadoF.jtl         # Resultado de la prueba principal (100 usuarios)
+│ ├── resultado50.jtl        # Resultados intermedios con 50 usuarios
+│ ├── resultado200.jtl       # Resultados intermedios con 200 usuarios
+│ └── ...                    # Archivos adicionales para diferentes niveles de carga
+│
+├── METRICAS_TESTP.CSV       # Archivo consolidado con todas las métricas de rendimiento
+│ # (tiempos de respuesta, errores, throughput, punto de quiebre)              # Documentación
 ```
 
 ### Principios de Diseño Implementados
@@ -66,6 +100,9 @@ automation_test/
 - **Python 3.8+**
 - **Google Chrome** (última versión)
 - **Git** para clonar el repositorio
+- **Java 8 o superior**
+- **Apache JMeter**
+- **Maven** (si se desea ejecutar pruebas automatizadas)
 
 ### Instalación Rápida
 ```bash
@@ -107,6 +144,21 @@ pip install -r requirements.txt
 pip install -r requirements.txt
 ```
 
+### **Instalación JMeter**: Instalación en Windows / Linux / macOS
+
+-**Descarga la última versión desde**: https://jmeter.apache.org/download_jmeter.cgi
+
+-**Descomprime el archivo ZIP/TGZ**:
+```bash
+tar -xvzf apache-jmeter-<versión>.tgz
+cd apache-jmeter-<versión>
+```
+
+-**Verifica que JMeter funcione**:
+```bash
+./bin/jmeter -v
+```
+
 ## Ejecución de Pruebas
 
 ### Ejecución Completa (Recomendado)
@@ -124,6 +176,105 @@ python web_automation.py
 ```bash
 python api_automation.py
 ```
+### Ejecución JMeter
+
+- Abre **Apache JMeter**
+- Carga el archivo `.jmx` correspondiente al servicio que desees probar.
+- Ajusta los parámetros de usuarios y duración si es necesario.
+- Ejecuta la prueba.
+- Los resultados se almacenan automáticamente en archivos `.jtl` dentro de la carpeta correspondiente.
+
+## Ejecución con Docker
+
+### Instalación de Docker
+Instalar Docker Desktop desde [docker.com](https://www.docker.com/products/docker-desktop)
+
+### Lanzador Rápido
+
+#### Linux/macOS:
+```bash
+# Ejecutar todas las pruebas
+./run-docker.sh run
+
+# Solo pruebas web  
+./run-docker.sh web
+
+# Solo pruebas API
+./run-docker.sh api
+
+# Modo debug interactivo
+./run-docker.sh debug
+```
+
+#### Windows:
+```cmd
+# Ejecutar todas las pruebas
+run-docker.bat run
+
+# Solo pruebas web
+run-docker.bat web  
+
+# Solo pruebas API
+run-docker.bat api
+
+# Modo debug interactivo
+run-docker.bat debug
+```
+
+### Comandos Docker Avanzados
+
+#### Construcción Manual:
+```bash
+# Construir imagen
+docker build -t qa-automation:latest .
+
+# Ejecutar contenedor
+docker run --rm \
+  -v $(pwd)/downloads:/app/downloads \
+  --shm-size=2g \
+  qa-automation:latest
+```
+
+#### Docker Compose:
+```bash
+# Ejecutar con compose
+docker-compose up qa-automation
+
+# Con servidor de reportes
+docker-compose --profile reports up
+```
+
+### Opciones del Lanzador Docker
+
+| Comando | Descripción |
+|---------|-------------|
+| `build` | Construir la imagen Docker |
+| `run` | Ejecutar todas las pruebas |
+| `web` | Ejecutar solo pruebas web |
+| `api` | Ejecutar solo pruebas API |
+| `debug` | Modo debug interactivo |
+| `shell` | Abrir shell en contenedor |
+| `logs` | Mostrar logs de ejecución |
+| `status` | Estado de contenedores |
+| `clean` | Limpiar recursos Docker |
+| `help` | Mostrar ayuda |
+
+### Ventajas de Docker
+
+#### Consistencia de Entorno
+- **Mismo entorno** en desarrollo, CI/CD y producción
+- **Chrome y ChromeDriver** preinstalados y configurados
+- **Dependencias fijas** sin conflictos de versiones
+
+#### Facilidad de Uso  
+- **Un solo comando** para ejecutar todas las pruebas
+- **No requiere** instalación local de Chrome/ChromeDriver
+- **Funciona en cualquier** sistema operativo
+
+#### Aislamiento y Seguridad
+- **Contenedor aislado** no afecta el sistema host
+- **Recursos limitados** para evitar consumo excesivo
+- **Limpieza automática** de archivos temporales
 
 ## Reportes y Resultados
 
@@ -152,7 +303,6 @@ Tiempo total de ejecución: 45.67 segundos
 Automatización Web: EXITOSO  
 Automatización API: EXITOSO
 Tasa de éxito: 100.0%
-EXCELENTE: ¡TODAS LAS PRUEBAS PASARON EXITOSAMENTE!
 ```
 
 ## Configuración Avanzada
@@ -290,16 +440,16 @@ google-chrome --version
 - **Requests**: Cliente HTTP optimizado  
 - **JSONSchema**: Validación de contratos API
 - **Chrome/ChromeDriver**: Navegador para tests
+- **Java 8 o superior**
+- **Apache JMeter**
 
 ---
 
 ## Soporte
 
 Para cualquier consulta sobre este proyecto:
-- Revisar logs detallados en consola
+- Revisar salida detallada en consola
 - Verificar sección "Resolución de Problemas"
 - Consultar comentarios en el código fuente
 
 ---
-
-*Este proyecto demuestra competencias en automatización QA con enfoque en calidad, rendimiento y mantenibilidad del código.*
